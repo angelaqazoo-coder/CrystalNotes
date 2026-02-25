@@ -18,6 +18,7 @@ import {
 import Markdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import { transformTranscript } from './services/geminiService';
+import { downloadAsDocx } from './services/docxService';
 
 export default function App() {
   const [transcript, setTranscript] = useState('');
@@ -52,6 +53,11 @@ export default function App() {
     setTranscript('');
     setNotes('');
     setError(null);
+  };
+
+  const getTitle = () => {
+    const match = notes.match(/^# TITLE:\s*(.*)/);
+    return match ? match[1].trim() : "CrystalNotes";
   };
 
   return (
@@ -140,13 +146,22 @@ export default function App() {
               Notes
             </h2>
             {notes && (
-              <button
-                onClick={handleCopy}
-                className="flex items-center gap-1.5 text-xs font-bold text-zinc-900 hover:bg-zinc-100 px-3 py-1.5 border border-zinc-300 transition-colors"
-              >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                {copied ? 'Copied' : 'Copy'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => downloadAsDocx(notes, getTitle())}
+                  className="flex items-center gap-1.5 text-xs font-bold text-white bg-zinc-900 hover:bg-black px-3 py-1.5 transition-colors"
+                >
+                  <FileText size={14} />
+                  Download .docx
+                </button>
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center gap-1.5 text-xs font-bold text-zinc-900 hover:bg-zinc-100 px-3 py-1.5 border border-zinc-300 transition-colors"
+                >
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
             )}
           </div>
 
@@ -205,7 +220,16 @@ export default function App() {
           color: black;
         }
 
-        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+        .markdown-body h1 {
+          font-size: 24px;
+          text-align: center;
+          border-bottom: 2px solid #000;
+          padding-bottom: 10px;
+          margin-bottom: 20px;
+          text-transform: uppercase;
+        }
+
+        .markdown-body h2, .markdown-body h3 {
           margin-top: 1.5em;
           margin-bottom: 0.5em;
           font-weight: 700;
